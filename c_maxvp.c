@@ -112,12 +112,14 @@ void vanityPoint(struct vpNode *node){
 
     for(i=0;i<node->size;i++){
         if(distance_arr[i]<node->median){
+            #pragma omp critical (Inner)
             {
                 node->lower[counter_low] = node->elements[i];
                 counter_low++;
             }
         }
         else{
+            #pragma omp critical (Outer)
             {
                 node->upper[counter_high] = node->elements[i];
                 counter_high++;
@@ -154,19 +156,21 @@ int main(){
     }
 
     generatePoints(N,d,pts);
-    struct vpNode *parent = malloc(sizeof(struct vpNode));
-    parent->elements = pts;
-    parent->size = N;
-    parent->dimensions = d;
-    parent->lower = malloc((parent->size/2)*sizeof(double*));
-    parent->upper = malloc((parent->size/2)*sizeof(double*));
-    parent->vp_idx = 0;
-    
+    struct vpNode *parent = malloc(sizeof(struct vpNode)*N);
+    for(int i=0;i<N;i++){
+        parent[i].elements = pts;
+        parent[i].size = N;
+        parent[i].dimensions = d;
+        parent[i].lower = malloc((parent->size/2)*sizeof(double*));
+        parent[i].upper = malloc((parent->size/2)*sizeof(double*));
+        parent[i].vp_idx = i;
+    }
     gettimeofday(&t_start,NULL);
     
+    for(int i=0;i<N;i++){
 
-    vanityTree(parent);
-    
+        vanityTree(&parent[i]);
+    }
 
     gettimeofday(&t_end,NULL);
     exec_time = (t_end.tv_sec - t_start.tv_sec) * 1000.0;

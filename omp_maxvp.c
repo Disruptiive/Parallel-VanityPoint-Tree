@@ -129,8 +129,6 @@ void vanityPoint(struct vpNode *node){
             }
         }
     }
-    if (counter_high !=counter_low)
-        printf("finished %d, %d\n",counter_low,counter_high);
     free(distance_arr);
 }
 

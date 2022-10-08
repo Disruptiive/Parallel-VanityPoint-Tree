@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <float.h>
 #include <limits.h>
+#include <omp.h>
 
 struct vpNode{
     double **elements;
@@ -103,6 +104,7 @@ void vanityPoint(struct vpNode *node){
     double *vp = node->elements[node->vp_idx];
     double *distance_arr = malloc(node->size*sizeof(double));
 
+    #pragma omp parallel for schedule(static,2) 
     for(i=0;i<node->size;i++){
         distance_arr[i] = calculateDistance(node->elements[i],node->elements[node->vp_idx],node->dimensions);
     }
@@ -110,14 +112,17 @@ void vanityPoint(struct vpNode *node){
     counter_high = 0;
     node->median = findMedian(distance_arr,node->size);
 
+    #pragma omp parallel for schedule(static,2) 
     for(i=0;i<node->size;i++){
         if(distance_arr[i]<node->median){
+            #pragma omp critical (Inner)
             {
                 node->lower[counter_low] = node->elements[i];
                 counter_low++;
             }
         }
         else{
+            #pragma omp critical (Outer)
             {
                 node->upper[counter_high] = node->elements[i];
                 counter_high++;
@@ -134,9 +139,13 @@ void vanityTree(struct vpNode *node){
         child_lower = malloc(sizeof(struct vpNode));
         child_upper = malloc(sizeof(struct vpNode));
         popuplateChildrenNodes(node,child_lower,child_upper);
+        //free(node);
         vanityTree(child_lower);
         vanityTree(child_upper);
     }
+    //else{
+        //free(node);
+    //}
 }
 
 int main(){

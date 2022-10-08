@@ -129,7 +129,7 @@ void vanityTree(vpNode_t *node,double *pts){
     
     vanityPoint<<<1,node->size,node->size*sizeof(double)>>>(node,child_lower,child_upper,pts);
     cudaDeviceSynchronize();
-    printf("%d\n",node->size);
+    //printf("%d\n",node->size);
     if (node->size>2){
         vanityTree(child_lower,pts);
         vanityTree(child_upper,pts);
